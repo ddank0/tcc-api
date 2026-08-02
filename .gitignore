@@ -1,0 +1,15 @@
+/vendor/
+/node_modules/
+.env
+.phpunit.result.cache
+/storage/*.key
+/storage/framework/cache/*
+/storage/framework/sessions/*
+/storage/framework/views/*
+/storage/logs/*
+/public/storage
+.DS_Store
+
+# Contexto local do ferramentas de IA — não versionado
+.ai-context.md
+.ai-context-*.md
