@@ -1,6 +1,6 @@
 # tcc-api
 
-API REST do TCC — Sistema Inteligente para Licitações.
+API REST do TCC - Sistema Inteligente para Licitações.
 
 PHP 8.3 / Laravel. Consulta as tabelas produzidas por `tcc-jobs` e devolve JSON.
 Não executa modelos: previsões e scores chegam prontos, materializados em tabela.
