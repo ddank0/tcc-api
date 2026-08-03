@@ -43,6 +43,11 @@ jobs:
       - name: Formatação
         run: ./vendor/bin/pint --test
 
+      # Nível 10 é o máximo do PHPStan. Larastan é indispensável: sem ele o
+      # nível 10 acusa centenas de falsos positivos nas facades e no Eloquent.
+      - name: Análise estática (PHPStan nível 10)
+        run: php -d memory_limit=1G ./vendor/bin/phpstan analyse --no-progress
+
       - name: Testes
         run: ./vendor/bin/phpunit
         env:

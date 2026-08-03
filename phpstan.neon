@@ -1,0 +1,23 @@
+includes:
+    # Sem a extensão do Laravel, o nível 10 acusa centenas de falsos positivos
+    # nas facades, no container e nos métodos mágicos do Eloquent.
+    - vendor/larastan/larastan/extension.neon
+
+parameters:
+    level: 10
+
+    paths:
+        - app
+        - routes
+        - database
+        - tests
+
+    # A API é somente leitura e não executa modelo. Estas checagens extras
+    # pegam justamente o tipo de erro que passaria pelos testes.
+    checkOctaneCompatibility: true
+    checkModelProperties: true
+
+    # O nível 10 é pesado: em paralelo, os workers estouram a memória padrão
+    # do PHP e o processo morre com "child process error (exit code 255)".
+    parallel:
+        maximumNumberOfProcesses: 2
