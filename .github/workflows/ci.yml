@@ -1,0 +1,65 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: tcc
+          POSTGRES_USER: tcc
+          POSTGRES_PASSWORD: tcc
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: pdo, pdo_pgsql, mbstring, xml
+          coverage: none
+
+      - name: Instalar dependências
+        run: composer install --prefer-dist --no-progress --no-interaction
+
+      - name: Preparar ambiente
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+
+      - name: Formatação
+        run: ./vendor/bin/pint --test
+
+      - name: Testes
+        run: ./vendor/bin/phpunit
+        env:
+          DB_CONNECTION: pgsql
+          DB_HOST: 127.0.0.1
+          DB_PORT: 5432
+          DB_DATABASE: tcc
+          DB_USERNAME: tcc
+          DB_PASSWORD: tcc
+
+  # O compose de desenvolvimento nunca exercita o estágio prod. Sem este job,
+  # um Dockerfile quebrado só apareceria na hora do deploy.
+  build-prod:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build do estágio de produção
+        run: docker build --target prod -t tcc-api:prod .
+      - name: Confirmar que pdo_pgsql está na imagem
+        run: docker run --rm tcc-api:prod php -m | grep -q pdo_pgsql
