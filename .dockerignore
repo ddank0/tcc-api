@@ -1,0 +1,17 @@
+.git
+.gitignore
+.github
+.ai-context.md
+.env
+.env.*
+# vendor do host anularia o composer install --no-dev do estágio prod
+vendor
+node_modules
+storage/logs/*
+storage/framework/cache/*
+storage/framework/sessions/*
+storage/framework/views/*
+tests
+.phpunit.result.cache
+Dockerfile
+.dockerignore

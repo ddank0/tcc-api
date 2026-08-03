@@ -2,8 +2,14 @@ FROM php:8.4-cli-alpine AS base
 
 # pdo_pgsql é obrigatório: sem ele o Laravel falha com "could not find
 # driver", mensagem que não indica a causa.
-RUN apk add --no-cache postgresql-dev \
-    && docker-php-ext-install pdo pdo_pgsql
+#
+# postgresql-dev arrasta o toolchain de compilação inteiro (centenas de MB).
+# Instalado como dependência virtual e removido após compilar a extensão,
+# mantendo apenas libpq, que é o que o runtime precisa.
+RUN apk add --no-cache --virtual .build-deps postgresql-dev \
+    && docker-php-ext-install pdo pdo_pgsql \
+    && apk add --no-cache libpq \
+    && apk del .build-deps
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 WORKDIR /app
