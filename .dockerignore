@@ -1,7 +1,7 @@
 .git
 .gitignore
 .github
-.ai-context.md
+*.md
 .env
 .env.*
 # vendor do host anularia o composer install --no-dev do estágio prod
