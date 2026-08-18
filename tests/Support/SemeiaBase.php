@@ -11,6 +11,21 @@ use Illuminate\Support\Facades\DB;
  */
 trait SemeiaBase
 {
+    /** Semeia serie_mensal, incluindo as competências atípicas. */
+    protected function semearSerie(): void
+    {
+        DB::table('serie_mensal')->insert([
+            ['competencia' => '202306', 'codigo_orgao' => '22000', 'codigo_modalidade' => 5, 'quantidade_licitacoes' => 1, 'valor_total' => '1200000.0000', 'valor_mediano' => '1200000.0000'],
+            ['competencia' => '202312', 'codigo_orgao' => '26000', 'codigo_modalidade' => 5, 'quantidade_licitacoes' => 1, 'valor_total' => null, 'valor_mediano' => null],
+            ['competencia' => '202401', 'codigo_orgao' => '26000', 'codigo_modalidade' => 5, 'quantidade_licitacoes' => 1, 'valor_total' => '250000.0000', 'valor_mediano' => '250000.0000'],
+            ['competencia' => '202402', 'codigo_orgao' => '26000', 'codigo_modalidade' => 8, 'quantidade_licitacoes' => 1, 'valor_total' => '5000.0000', 'valor_mediano' => '5000.0000'],
+            // 201812 tem licitações mas nenhum participante: a fonte publica o
+            // ZIP truncado. 202404 encerra a série e vem com volume anômalo.
+            ['competencia' => '201812', 'codigo_orgao' => '26000', 'codigo_modalidade' => 5, 'quantidade_licitacoes' => 40, 'valor_total' => '900000.0000', 'valor_mediano' => '20000.0000'],
+            ['competencia' => '202404', 'codigo_orgao' => '26000', 'codigo_modalidade' => 5, 'quantidade_licitacoes' => 2, 'valor_total' => '10000.0000', 'valor_mediano' => '5000.0000'],
+        ]);
+    }
+
     protected function semear(): void
     {
         DB::table('modalidade')->insert([
