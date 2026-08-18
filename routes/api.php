@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\LicitacaoController;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 
@@ -16,3 +17,5 @@ Route::get('/health', function () {
         'database' => $banco,
     ]);
 });
+
+Route::get('/licitacoes', [LicitacaoController::class, 'index']);
