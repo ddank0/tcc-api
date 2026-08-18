@@ -19,3 +19,5 @@ Route::get('/health', function () {
 });
 
 Route::get('/licitacoes', [LicitacaoController::class, 'index']);
+Route::get('/licitacoes/{id}', [LicitacaoController::class, 'show'])
+    ->whereNumber('id');
