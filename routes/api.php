@@ -17,3 +17,16 @@ Route::prefix('analytics')->group(function (): void {
     Route::get('/orgaos', [AnalyticsController::class, 'orgaos']);
     Route::get('/fornecedores', [AnalyticsController::class, 'fornecedores']);
 });
+
+// A especificação servida é o arquivo versionado, e não uma geração em
+// runtime: é ele que gera o cliente do Angular, então servir outra coisa
+// esconderia divergência.
+Route::get('/openapi.json', function () {
+    $caminho = base_path('openapi.json');
+
+    abort_unless(file_exists($caminho), 404);
+
+    return response()->file($caminho, ['Content-Type' => 'application/json']);
+});
+
+Route::get('/docs', fn () => view('docs'));

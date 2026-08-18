@@ -7,6 +7,7 @@ use App\Support\CompetenciasAtipicas;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
+use OpenApi\Attributes as OA;
 
 /**
  * Análises históricas. Todas leem tabelas materializadas pelo `aggregate`.
@@ -18,6 +19,28 @@ use Illuminate\Support\Facades\DB;
 class AnalyticsController extends Controller
 {
     /** Evolução temporal. Medido em 19 ms sobre serie_mensal. */
+    #[OA\Get(
+        path: '/analytics/evolucao',
+        summary: 'Série temporal de quantidade e valor por competência',
+        tags: ['Análises'],
+        parameters: [
+            new OA\QueryParameter(name: 'competencia_de', description: 'AAAAMM', schema: new OA\Schema(type: 'string')),
+            new OA\QueryParameter(name: 'competencia_ate', description: 'AAAAMM', schema: new OA\Schema(type: 'string')),
+        ],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'Série ordenada por competência',
+                content: new OA\JsonContent(properties: [
+                    new OA\Property(property: 'data', type: 'array', items: new OA\Items(ref: '#/components/schemas/PontoDaSerie')),
+                    new OA\Property(property: 'meta', properties: [
+                        new OA\Property(property: 'competencias', type: 'integer'),
+                        new OA\Property(property: 'competencias_parciais', description: 'Motivo de cada competência marcada como parcial.', type: 'object', additionalProperties: new OA\AdditionalProperties(type: 'string')),
+                    ], type: 'object'),
+                ], type: 'object')
+            ),
+        ]
+    )]
     public function evolucao(PeriodoRequest $request): JsonResponse
     {
         $linhas = $this->comPeriodo(DB::table('serie_mensal'), $request, 'competencia')
@@ -47,6 +70,16 @@ class AnalyticsController extends Controller
     }
 
     /** Distribuição por modalidade. Medido em 26 ms. */
+    #[OA\Get(
+        path: '/analytics/modalidades',
+        summary: 'Distribuição por modalidade',
+        tags: ['Análises'],
+        parameters: [
+            new OA\QueryParameter(name: 'competencia_de', description: 'AAAAMM', schema: new OA\Schema(type: 'string')),
+            new OA\QueryParameter(name: 'competencia_ate', description: 'AAAAMM', schema: new OA\Schema(type: 'string')),
+        ],
+        responses: [new OA\Response(response: 200, description: 'Modalidades ordenadas por quantidade')]
+    )]
     public function modalidades(PeriodoRequest $request): JsonResponse
     {
         $linhas = $this->comPeriodo(DB::table('serie_mensal AS s'), $request, 's.competencia')
@@ -67,6 +100,17 @@ class AnalyticsController extends Controller
     }
 
     /** Ranking de órgãos. Lê serie_mensal. */
+    #[OA\Get(
+        path: '/analytics/orgaos',
+        summary: 'Ranking de órgãos por valor',
+        tags: ['Análises'],
+        parameters: [
+            new OA\QueryParameter(name: 'competencia_de', description: 'AAAAMM', schema: new OA\Schema(type: 'string')),
+            new OA\QueryParameter(name: 'competencia_ate', description: 'AAAAMM', schema: new OA\Schema(type: 'string')),
+            new OA\QueryParameter(name: 'limit', schema: new OA\Schema(type: 'integer', maximum: 100)),
+        ],
+        responses: [new OA\Response(response: 200, description: 'Órgãos ordenados por valor total')]
+    )]
     public function orgaos(PeriodoRequest $request): JsonResponse
     {
         $linhas = $this->comPeriodo(DB::table('serie_mensal AS s'), $request, 's.competencia')
@@ -99,6 +143,29 @@ class AnalyticsController extends Controller
      * Nenhum dos dois toca item_licitacao: agregar os 14,2 milhões de itens em
      * tempo de request levava 7.866 ms.
      */
+    #[OA\Get(
+        path: '/analytics/fornecedores',
+        summary: 'Ranking de fornecedores por valor',
+        description: 'Sem filtro de período lê a tabela global; com filtro, a tabela por competência. A granularidade usada vem em meta.',
+        tags: ['Análises'],
+        parameters: [
+            new OA\QueryParameter(name: 'competencia_de', description: 'AAAAMM', schema: new OA\Schema(type: 'string')),
+            new OA\QueryParameter(name: 'competencia_ate', description: 'AAAAMM', schema: new OA\Schema(type: 'string')),
+            new OA\QueryParameter(name: 'limit', schema: new OA\Schema(type: 'integer', maximum: 100)),
+        ],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'Fornecedores ordenados por valor total',
+                content: new OA\JsonContent(properties: [
+                    new OA\Property(property: 'data', type: 'array', items: new OA\Items(ref: '#/components/schemas/RankingFornecedor')),
+                    new OA\Property(property: 'meta', properties: [
+                        new OA\Property(property: 'granularidade', type: 'string', enum: ['global', 'por_competencia']),
+                    ], type: 'object'),
+                ], type: 'object')
+            ),
+        ]
+    )]
     public function fornecedores(PeriodoRequest $request): JsonResponse
     {
         $comPeriodo = $request->filled('competencia_de') || $request->filled('competencia_ate');

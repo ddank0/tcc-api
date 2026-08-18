@@ -1,0 +1,656 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "API de Licitações",
+        "description": "Consulta e análise histórica de licitações públicas federais.\n\nSomente leitura. Os dados vêm do Portal da Transparência, competências\n201301 a 202404 - a fonte foi descontinuada com a transição para a Lei\n14.133/2021.\n\nAs análises leem tabelas materializadas por job em lote; nenhum endpoint\ncalcula agregação sobre as tabelas de volume.\n\nO recorte de período usa `competencia` (AAAAMM) e não a data de abertura,\nporque 72,6% das datas de abertura são nulas na série.",
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "/api",
+            "description": "Base da API"
+        }
+    ],
+    "paths": {
+        "/analytics/evolucao": {
+            "get": {
+                "tags": [
+                    "Análises"
+                ],
+                "summary": "Série temporal de quantidade e valor por competência",
+                "description": "Evolução temporal. Medido em 19 ms sobre serie_mensal.",
+                "operationId": "8da154758ad2d9e711f5a4a37ae7ddd5",
+                "parameters": [
+                    {
+                        "name": "competencia_de",
+                        "in": "query",
+                        "description": "AAAAMM",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "competencia_ate",
+                        "in": "query",
+                        "description": "AAAAMM",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Série ordenada por competência",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/PontoDaSerie"
+                                            }
+                                        },
+                                        "meta": {
+                                            "properties": {
+                                                "competencias": {
+                                                    "type": "integer"
+                                                },
+                                                "competencias_parciais": {
+                                                    "description": "Motivo de cada competência marcada como parcial.",
+                                                    "type": "object",
+                                                    "additionalProperties": {
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/analytics/modalidades": {
+            "get": {
+                "tags": [
+                    "Análises"
+                ],
+                "summary": "Distribuição por modalidade",
+                "description": "Distribuição por modalidade. Medido em 26 ms.",
+                "operationId": "ab330a6d3e7f5e969f6decc60d9bbaf7",
+                "parameters": [
+                    {
+                        "name": "competencia_de",
+                        "in": "query",
+                        "description": "AAAAMM",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "competencia_ate",
+                        "in": "query",
+                        "description": "AAAAMM",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Modalidades ordenadas por quantidade"
+                    }
+                }
+            }
+        },
+        "/analytics/orgaos": {
+            "get": {
+                "tags": [
+                    "Análises"
+                ],
+                "summary": "Ranking de órgãos por valor",
+                "description": "Ranking de órgãos. Lê serie_mensal.",
+                "operationId": "8db05367d66c06991e0c616e4ff6f4cb",
+                "parameters": [
+                    {
+                        "name": "competencia_de",
+                        "in": "query",
+                        "description": "AAAAMM",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "competencia_ate",
+                        "in": "query",
+                        "description": "AAAAMM",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer",
+                            "maximum": 100
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Órgãos ordenados por valor total"
+                    }
+                }
+            }
+        },
+        "/analytics/fornecedores": {
+            "get": {
+                "tags": [
+                    "Análises"
+                ],
+                "summary": "Ranking de fornecedores por valor",
+                "description": "Sem filtro de período lê a tabela global; com filtro, a tabela por competência. A granularidade usada vem em meta.",
+                "operationId": "74bbca41108454d7e841b4ee8507421a",
+                "parameters": [
+                    {
+                        "name": "competencia_de",
+                        "in": "query",
+                        "description": "AAAAMM",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "competencia_ate",
+                        "in": "query",
+                        "description": "AAAAMM",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer",
+                            "maximum": 100
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Fornecedores ordenados por valor total",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/RankingFornecedor"
+                                            }
+                                        },
+                                        "meta": {
+                                            "properties": {
+                                                "granularidade": {
+                                                    "type": "string",
+                                                    "enum": [
+                                                        "global",
+                                                        "por_competencia"
+                                                    ]
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/health": {
+            "get": {
+                "tags": [
+                    "Serviço"
+                ],
+                "summary": "Estado do serviço e da última ingestão",
+                "description": "Estado do serviço e da última ingestão.\n\nAtende ao RF10: a API não executa job, mas precisa dizer quando o\núltimo rodou, e com que resultado. A tabela tem uma linha por\ncompetência e permanece pequena - 136 hoje.",
+                "operationId": "574a7ce16250fb4c623264c68ff73099",
+                "responses": {
+                    "200": {
+                        "description": "Estado atual",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string"
+                                        },
+                                        "database": {
+                                            "type": "string",
+                                            "enum": [
+                                                "ok",
+                                                "erro"
+                                            ]
+                                        },
+                                        "ultima_ingestao": {
+                                            "properties": {
+                                                "competencia": {
+                                                    "type": "string"
+                                                },
+                                                "arquivo": {
+                                                    "type": "string",
+                                                    "nullable": true
+                                                },
+                                                "status": {
+                                                    "type": "string"
+                                                },
+                                                "mensagem_erro": {
+                                                    "type": "string",
+                                                    "nullable": true
+                                                },
+                                                "iniciado_em": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "nullable": true
+                                                },
+                                                "finalizado_em": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "nullable": true
+                                                },
+                                                "linhas_lidas": {
+                                                    "type": "integer"
+                                                },
+                                                "linhas_inseridas": {
+                                                    "type": "integer"
+                                                },
+                                                "linhas_rejeitadas": {
+                                                    "type": "integer"
+                                                }
+                                            },
+                                            "type": "object",
+                                            "nullable": true
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/licitacoes": {
+            "get": {
+                "tags": [
+                    "Licitações"
+                ],
+                "summary": "Lista licitações com filtros e paginação",
+                "description": "Listagem paginada e filtrada.\n\nMedido na base de 1,74 milhão de licitações: 46 ms com cache quente,\n2.348 ms com cache frio. O `select` explícito e o eager loading são o\nque mantém isso - hidratar o modelo inteiro e resolver relações por\nlinha transformaria uma página de 25 em dezenas de consultas.",
+                "operationId": "b190dfe2297ff00a69d63c221b0b61fd",
+                "parameters": [
+                    {
+                        "name": "codigo_orgao",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "codigo_modalidade",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "uf",
+                        "in": "query",
+                        "schema": {
+                            "type": "string",
+                            "maxLength": 2
+                        }
+                    },
+                    {
+                        "name": "competencia_de",
+                        "in": "query",
+                        "description": "AAAAMM",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "competencia_ate",
+                        "in": "query",
+                        "description": "AAAAMM",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "situacao",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "valor_min",
+                        "in": "query",
+                        "schema": {
+                            "type": "number"
+                        }
+                    },
+                    {
+                        "name": "valor_max",
+                        "in": "query",
+                        "schema": {
+                            "type": "number"
+                        }
+                    },
+                    {
+                        "name": "q",
+                        "in": "query",
+                        "description": "Busca no objeto. Sensível a acento.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "ordenar",
+                        "in": "query",
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "valor",
+                                "competencia",
+                                "data_resultado",
+                                "numero_licitacao"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "direcao",
+                        "in": "query",
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "asc",
+                                "desc"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer",
+                            "maximum": 100
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Página de licitações",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Licitacao"
+                                            }
+                                        },
+                                        "meta": {
+                                            "$ref": "#/components/schemas/PaginacaoMeta"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Parâmetro inválido"
+                    }
+                }
+            }
+        },
+        "/licitacoes/{id}": {
+            "get": {
+                "tags": [
+                    "Licitações"
+                ],
+                "summary": "Detalhe com itens e participantes",
+                "description": "Detalhe com itens e participantes.\n\nMedido por `licitacao_id`: 9,7 ms para itens e 8,2 ms para\nparticipantes, com índice nas duas tabelas filhas. O eager loading é o\nque evita uma consulta por filho.\n\nOs limites existem porque há licitações com centenas de itens: sem\nteto, a resposta chegaria a dezenas de MB. Os totais vêm da contagem no\nbanco, então quem consome sabe que foi truncado.",
+                "operationId": "8b94e0509eb61db47b61ad73dff5394e",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Licitação. Listas de filhos limitadas a 500; os totais indicam se houve corte.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/Licitacao"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Licitação não encontrada"
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "Modalidade": {
+                "properties": {
+                    "codigo": {
+                        "description": "Metadados e schemas compartilhados da especificação.\n\nO contrato é declarado, não inferido: o cliente TypeScript do Angular é\ngerado deste arquivo, e um contrato que muda sozinho a cada versão da\nferramenta geraria um cliente que não corresponde à API.",
+                        "type": "integer",
+                        "nullable": true
+                    },
+                    "nome": {
+                        "type": "string",
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
+            "Orgao": {
+                "properties": {
+                    "codigo_orgao": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "nome": {
+                        "type": "string",
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
+            "UnidadeGestora": {
+                "properties": {
+                    "codigo_ug": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "nome": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "uf": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "municipio": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "orgao": {
+                        "$ref": "#/components/schemas/Orgao"
+                    }
+                },
+                "type": "object"
+            },
+            "Licitacao": {
+                "properties": {
+                    "id": {
+                        "type": "integer"
+                    },
+                    "numero_licitacao": {
+                        "type": "string"
+                    },
+                    "numero_processo": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "objeto": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "situacao": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "valor": {
+                        "description": "Decimal como string: valores chegam a trilhões e float perderia precisão.",
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "competencia": {
+                        "type": "string",
+                        "example": "202401"
+                    },
+                    "data_abertura": {
+                        "description": "Nula em 72,6% dos registros na série completa.",
+                        "type": "string",
+                        "format": "date",
+                        "nullable": true
+                    },
+                    "data_resultado": {
+                        "type": "string",
+                        "format": "date",
+                        "nullable": true
+                    },
+                    "modalidade": {
+                        "$ref": "#/components/schemas/Modalidade"
+                    },
+                    "unidade_gestora": {
+                        "$ref": "#/components/schemas/UnidadeGestora"
+                    }
+                },
+                "type": "object"
+            },
+            "PaginacaoMeta": {
+                "properties": {
+                    "total": {
+                        "type": "integer"
+                    },
+                    "per_page": {
+                        "type": "integer"
+                    },
+                    "current_page": {
+                        "type": "integer"
+                    },
+                    "last_page": {
+                        "type": "integer"
+                    }
+                },
+                "type": "object"
+            },
+            "PontoDaSerie": {
+                "properties": {
+                    "competencia": {
+                        "type": "string",
+                        "example": "202401"
+                    },
+                    "quantidade_licitacoes": {
+                        "type": "integer"
+                    },
+                    "valor_total": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "parcial": {
+                        "description": "true quando a competência é publicada incompleta pela fonte. O motivo vem em meta.competencias_parciais.",
+                        "type": "boolean"
+                    }
+                },
+                "type": "object"
+            },
+            "RankingFornecedor": {
+                "properties": {
+                    "cnpj": {
+                        "type": "string"
+                    },
+                    "nome": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "itens_vencidos": {
+                        "type": "integer"
+                    },
+                    "licitacoes_distintas": {
+                        "type": "integer"
+                    },
+                    "valor_total": {
+                        "type": "string",
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Licitações",
+            "description": "Consulta de licitações"
+        },
+        {
+            "name": "Análises",
+            "description": "Séries e rankings a partir de tabelas materializadas"
+        },
+        {
+            "name": "Serviço",
+            "description": "Estado do serviço e da ingestão"
+        }
+    ]
+}

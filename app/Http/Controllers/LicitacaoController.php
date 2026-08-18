@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Database\Query\Builder as QueryBuilder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
+use OpenApi\Attributes as OA;
 
 class LicitacaoController extends Controller
 {
@@ -25,6 +26,37 @@ class LicitacaoController extends Controller
      * que mantém isso - hidratar o modelo inteiro e resolver relações por
      * linha transformaria uma página de 25 em dezenas de consultas.
      */
+    #[OA\Get(
+        path: '/licitacoes',
+        summary: 'Lista licitações com filtros e paginação',
+        tags: ['Licitações'],
+        parameters: [
+            new OA\QueryParameter(name: 'codigo_orgao', schema: new OA\Schema(type: 'string')),
+            new OA\QueryParameter(name: 'codigo_modalidade', schema: new OA\Schema(type: 'integer')),
+            new OA\QueryParameter(name: 'uf', schema: new OA\Schema(type: 'string', maxLength: 2)),
+            new OA\QueryParameter(name: 'competencia_de', description: 'AAAAMM', schema: new OA\Schema(type: 'string')),
+            new OA\QueryParameter(name: 'competencia_ate', description: 'AAAAMM', schema: new OA\Schema(type: 'string')),
+            new OA\QueryParameter(name: 'situacao', schema: new OA\Schema(type: 'string')),
+            new OA\QueryParameter(name: 'valor_min', schema: new OA\Schema(type: 'number')),
+            new OA\QueryParameter(name: 'valor_max', schema: new OA\Schema(type: 'number')),
+            new OA\QueryParameter(name: 'q', description: 'Busca no objeto. Sensível a acento.', schema: new OA\Schema(type: 'string')),
+            new OA\QueryParameter(name: 'ordenar', schema: new OA\Schema(type: 'string', enum: ['valor', 'competencia', 'data_resultado', 'numero_licitacao'])),
+            new OA\QueryParameter(name: 'direcao', schema: new OA\Schema(type: 'string', enum: ['asc', 'desc'])),
+            new OA\QueryParameter(name: 'page', schema: new OA\Schema(type: 'integer', minimum: 1)),
+            new OA\QueryParameter(name: 'per_page', schema: new OA\Schema(type: 'integer', maximum: 100)),
+        ],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'Página de licitações',
+                content: new OA\JsonContent(properties: [
+                    new OA\Property(property: 'data', type: 'array', items: new OA\Items(ref: '#/components/schemas/Licitacao')),
+                    new OA\Property(property: 'meta', ref: '#/components/schemas/PaginacaoMeta'),
+                ], type: 'object')
+            ),
+            new OA\Response(response: 422, description: 'Parâmetro inválido'),
+        ]
+    )]
     public function index(ListarLicitacoesRequest $request): JsonResponse
     {
         $consulta = Licitacao::query()
@@ -101,6 +133,24 @@ class LicitacaoController extends Controller
      * teto, a resposta chegaria a dezenas de MB. Os totais vêm da contagem no
      * banco, então quem consome sabe que foi truncado.
      */
+    #[OA\Get(
+        path: '/licitacoes/{id}',
+        summary: 'Detalhe com itens e participantes',
+        tags: ['Licitações'],
+        parameters: [
+            new OA\PathParameter(name: 'id', required: true, schema: new OA\Schema(type: 'integer')),
+        ],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'Licitação. Listas de filhos limitadas a 500; os totais indicam se houve corte.',
+                content: new OA\JsonContent(properties: [
+                    new OA\Property(property: 'data', ref: '#/components/schemas/Licitacao'),
+                ], type: 'object')
+            ),
+            new OA\Response(response: 404, description: 'Licitação não encontrada'),
+        ]
+    )]
     public function show(int $id): JsonResponse
     {
         $licitacao = Licitacao::query()
