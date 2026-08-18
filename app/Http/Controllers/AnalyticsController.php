@@ -66,6 +66,73 @@ class AnalyticsController extends Controller
         ]);
     }
 
+    /** Ranking de órgãos. Lê serie_mensal. */
+    public function orgaos(PeriodoRequest $request): JsonResponse
+    {
+        $linhas = $this->comPeriodo(DB::table('serie_mensal AS s'), $request, 's.competencia')
+            ->leftJoin('orgao AS o', 'o.codigo_orgao', '=', 's.codigo_orgao')
+            ->selectRaw('s.codigo_orgao, o.nome, sum(s.quantidade_licitacoes) AS quantidade_licitacoes, sum(s.valor_total) AS valor_total')
+            ->groupBy('s.codigo_orgao', 'o.nome')
+            ->orderByRaw('sum(s.valor_total) DESC NULLS LAST')
+            ->limit($request->integer('limit', 20))
+            ->get();
+
+        return response()->json([
+            'data' => $linhas->map(fn (object $l): array => [
+                'codigo_orgao' => self::texto($l->codigo_orgao),
+                'nome' => self::texto($l->nome),
+                'quantidade_licitacoes' => self::inteiro($l->quantidade_licitacoes),
+                'valor_total' => self::texto($l->valor_total),
+            ])->all(),
+        ]);
+    }
+
+    /**
+     * Ranking de fornecedores.
+     *
+     * A tabela é escolhida pela presença de filtro de período. Sem filtro, lê
+     * ranking_fornecedor_total, com 314.731 linhas: 33 ms. Com filtro, lê
+     * ranking_fornecedor, com 1,65 milhão: 205 ms. Usar a granularidade fina
+     * no caso global custaria 1.530 ms, 3x o orçamento - e é o caso que a tela
+     * abre por padrão.
+     *
+     * Nenhum dos dois toca item_licitacao: agregar os 14,2 milhões de itens em
+     * tempo de request levava 7.866 ms.
+     */
+    public function fornecedores(PeriodoRequest $request): JsonResponse
+    {
+        $comPeriodo = $request->filled('competencia_de') || $request->filled('competencia_ate');
+        $limite = $request->integer('limit', 20);
+
+        $linhas = $comPeriodo
+            ? $this->comPeriodo(DB::table('ranking_fornecedor AS r'), $request, 'r.competencia')
+                ->leftJoin('fornecedor AS f', 'f.cnpj', '=', 'r.cnpj')
+                ->selectRaw('r.cnpj, f.nome, sum(r.itens_vencidos) AS itens_vencidos, sum(r.licitacoes_distintas) AS licitacoes_distintas, sum(r.valor_total) AS valor_total')
+                ->groupBy('r.cnpj', 'f.nome')
+                ->orderByRaw('sum(r.valor_total) DESC NULLS LAST')
+                ->limit($limite)
+                ->get()
+            : DB::table('ranking_fornecedor_total AS r')
+                ->leftJoin('fornecedor AS f', 'f.cnpj', '=', 'r.cnpj')
+                ->select('r.cnpj', 'f.nome', 'r.itens_vencidos', 'r.licitacoes_distintas', 'r.valor_total')
+                ->orderByRaw('r.valor_total DESC NULLS LAST')
+                ->limit($limite)
+                ->get();
+
+        return response()->json([
+            'data' => $linhas->map(fn (object $l): array => [
+                'cnpj' => self::texto($l->cnpj) ?? '',
+                'nome' => self::texto($l->nome),
+                'itens_vencidos' => self::inteiro($l->itens_vencidos),
+                'licitacoes_distintas' => self::inteiro($l->licitacoes_distintas),
+                'valor_total' => self::texto($l->valor_total),
+            ])->all(),
+            'meta' => [
+                'granularidade' => $comPeriodo ? 'por_competencia' : 'global',
+            ],
+        ]);
+    }
+
     /** Converte valor vindo do banco, que o PHPStan enxerga como mixed. */
     private static function texto(mixed $valor): ?string
     {

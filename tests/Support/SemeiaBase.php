@@ -26,6 +26,22 @@ trait SemeiaBase
         ]);
     }
 
+    /** Semeia as duas tabelas de ranking, como o `aggregate` faz. */
+    protected function semearRanking(): void
+    {
+        DB::table('ranking_fornecedor')->insert([
+            ['competencia' => '202401', 'cnpj' => '64799539000135', 'itens_vencidos' => 1, 'licitacoes_distintas' => 1, 'valor_total' => '200000.0000'],
+            ['competencia' => '202401', 'cnpj' => '08488971451', 'itens_vencidos' => 1, 'licitacoes_distintas' => 1, 'valor_total' => '50000.0000'],
+            ['competencia' => '202306', 'cnpj' => '64799539000135', 'itens_vencidos' => 1, 'licitacoes_distintas' => 1, 'valor_total' => '1200000.0000'],
+        ]);
+
+        // O global deriva do anterior, somando as competências.
+        DB::table('ranking_fornecedor_total')->insert([
+            ['cnpj' => '64799539000135', 'itens_vencidos' => 2, 'licitacoes_distintas' => 2, 'valor_total' => '1400000.0000'],
+            ['cnpj' => '08488971451', 'itens_vencidos' => 1, 'licitacoes_distintas' => 1, 'valor_total' => '50000.0000'],
+        ]);
+    }
+
     protected function semear(): void
     {
         DB::table('modalidade')->insert([

@@ -26,4 +26,6 @@ Route::get('/licitacoes/{id}', [LicitacaoController::class, 'show'])
 Route::prefix('analytics')->group(function (): void {
     Route::get('/evolucao', [AnalyticsController::class, 'evolucao']);
     Route::get('/modalidades', [AnalyticsController::class, 'modalidades']);
+    Route::get('/orgaos', [AnalyticsController::class, 'orgaos']);
+    Route::get('/fornecedores', [AnalyticsController::class, 'fornecedores']);
 });
