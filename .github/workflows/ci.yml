@@ -41,6 +41,8 @@ jobs:
         working-directory: .tcc-jobs
         env:
           DATABASE_URL: postgresql+psycopg://tcc:tcc@localhost:5432/tcc_api_test
+          # O Settings do tcc-jobs exige as duas; aqui só a primeira é usada.
+          TEST_DATABASE_URL: postgresql+psycopg://tcc:tcc@localhost:5432/tcc_api_test
         run: |
           PGPASSWORD=tcc psql -h localhost -U tcc -d tcc -c "CREATE DATABASE tcc_api_test;"
           uv run alembic upgrade head
