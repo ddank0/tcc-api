@@ -26,6 +26,25 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # O esquema pertence ao tcc-jobs, que é o dono do Alembic. Aplicá-lo a
+      # partir da fonte, e não de um dump versionado aqui, é o que impede a
+      # definição de divergir entre os dois repositórios.
+      - name: Buscar o esquema no repositório dono
+        uses: actions/checkout@v4
+        with:
+          repository: ddank0/tcc-jobs
+          path: .tcc-jobs
+
+      - uses: astral-sh/setup-uv@v5
+
+      - name: Criar banco de teste com o esquema do Alembic
+        working-directory: .tcc-jobs
+        env:
+          DATABASE_URL: postgresql+psycopg://tcc:tcc@localhost:5432/tcc_api_test
+        run: |
+          PGPASSWORD=tcc psql -h localhost -U tcc -d tcc -c "CREATE DATABASE tcc_api_test;"
+          uv run alembic upgrade head
+
       - uses: shivammathur/setup-php@v2
         with:
           php-version: '8.4'
@@ -54,7 +73,7 @@ jobs:
           DB_CONNECTION: pgsql
           DB_HOST: 127.0.0.1
           DB_PORT: 5432
-          DB_DATABASE: tcc
+          DB_DATABASE: tcc_api_test
           DB_USERNAME: tcc
           DB_PASSWORD: tcc
 

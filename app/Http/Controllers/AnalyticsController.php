@@ -168,7 +168,11 @@ class AnalyticsController extends Controller
     )]
     public function fornecedores(PeriodoRequest $request): JsonResponse
     {
-        $comPeriodo = $request->filled('competencia_de') || $request->filled('competencia_ate');
+        // Um intervalo que cobre a série inteira é o ranking global, e ler a
+        // granularidade fina nesse caso custa 1.099 ms contra 33 ms. Não é
+        // atalho: as duas tabelas somam exatamente o mesmo total.
+        $comPeriodo = ($request->filled('competencia_de') || $request->filled('competencia_ate'))
+            && ! $this->cobreASerieInteira($request);
         $limite = $request->integer('limit', 20);
 
         $linhas = $comPeriodo
@@ -198,6 +202,29 @@ class AnalyticsController extends Controller
                 'granularidade' => $comPeriodo ? 'por_competencia' : 'global',
             ],
         ]);
+    }
+
+    /**
+     * O recorte pedido abrange toda a série disponível?
+     *
+     * Os limites vêm do banco, e não de constante: a janela da fonte pode
+     * mudar se o conector do PNCP entrar, e um limite fixo passaria a mentir.
+     */
+    private function cobreASerieInteira(PeriodoRequest $request): bool
+    {
+        /** @var object{minimo: ?string, maximo: ?string}|null $limites */
+        $limites = DB::table('ranking_fornecedor')
+            ->selectRaw('min(competencia) AS minimo, max(competencia) AS maximo')
+            ->first();
+
+        if ($limites?->minimo === null || $limites->maximo === null) {
+            return false;
+        }
+
+        $de = $request->string('competencia_de', $limites->minimo)->toString();
+        $ate = $request->string('competencia_ate', $limites->maximo)->toString();
+
+        return $de <= $limites->minimo && $ate >= $limites->maximo;
     }
 
     /** Converte valor vindo do banco, que o PHPStan enxerga como mixed. */
