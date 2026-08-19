@@ -217,6 +217,110 @@
                 }
             }
         },
+        "/forecast": {
+            "get": {
+                "tags": [
+                    "Análises"
+                ],
+                "summary": "Previsões com intervalo de confiança",
+                "description": "Materializado pelo job de treino. O meta traz a procedência: algoritmo, janela de treino e quando rodou.",
+                "operationId": "01c5f3261ad1c251e18fca0988f43d92",
+                "parameters": [
+                    {
+                        "name": "serie",
+                        "in": "query",
+                        "description": "orgao:{codigo}, modalidade:{codigo} ou global",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "alvo",
+                        "in": "query",
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "quantidade",
+                                "valor"
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Previsões ordenadas por competência",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "competencia_alvo": {
+                                                        "type": "string",
+                                                        "example": "202405"
+                                                    },
+                                                    "alvo": {
+                                                        "type": "string",
+                                                        "enum": [
+                                                            "quantidade",
+                                                            "valor"
+                                                        ]
+                                                    },
+                                                    "valor_previsto": {
+                                                        "type": "string"
+                                                    },
+                                                    "ic_inferior": {
+                                                        "type": "string",
+                                                        "nullable": true
+                                                    },
+                                                    "ic_superior": {
+                                                        "type": "string",
+                                                        "nullable": true
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        },
+                                        "meta": {
+                                            "properties": {
+                                                "serie": {
+                                                    "type": "string"
+                                                },
+                                                "algoritmo": {
+                                                    "type": "string",
+                                                    "nullable": true
+                                                },
+                                                "janela_treino_inicio": {
+                                                    "type": "string",
+                                                    "nullable": true
+                                                },
+                                                "janela_treino_fim": {
+                                                    "type": "string",
+                                                    "nullable": true
+                                                },
+                                                "executado_em": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "nullable": true
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Série malformada ou ausente"
+                    }
+                }
+            }
+        },
         "/health": {
             "get": {
                 "tags": [

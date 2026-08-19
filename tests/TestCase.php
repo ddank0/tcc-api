@@ -17,6 +17,9 @@ abstract class TestCase extends BaseTestCase
      * @var list<string>
      */
     protected array $tabelas = [
+        'previsao',
+        'execucao_modelo',
+        'score_anomalia',
         'ranking_fornecedor_total',
         'ranking_fornecedor',
         'serie_mensal',

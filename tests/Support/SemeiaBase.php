@@ -42,6 +42,37 @@ trait SemeiaBase
         ]);
     }
 
+    /** Semeia uma execução de treino com previsões, como o job train faz. */
+    protected function semearPrevisao(): void
+    {
+        DB::table('execucao_modelo')->insert([
+            'tipo' => 'forecast:orgao', 'algoritmo' => 'AutoARIMA',
+            'parametros_json' => json_encode(['season_length' => 12, 'horizonte' => 12]),
+            'metricas_json' => json_encode(['series_treinadas' => 2]),
+            'janela_treino_inicio' => '201301', 'janela_treino_fim' => '202404',
+            'executado_em' => '2026-08-19 03:00:00',
+        ]);
+        $execucao = DB::table('execucao_modelo')->max('id');
+        assert(is_int($execucao));
+
+        $linhas = [];
+        foreach ([['202405', '2500.0000'], ['202406', '2600.0000']] as [$competencia, $valor]) {
+            $linhas[] = [
+                'execucao_id' => $execucao, 'serie_chave' => 'orgao:26000',
+                'competencia_alvo' => $competencia, 'alvo' => 'quantidade',
+                'valor_previsto' => $valor,
+                'ic_inferior' => '2000.0000', 'ic_superior' => '3000.0000',
+            ];
+        }
+        $linhas[] = [
+            'execucao_id' => $execucao, 'serie_chave' => 'orgao:22000',
+            'competencia_alvo' => '202405', 'alvo' => 'valor',
+            'valor_previsto' => '999.0000',
+            'ic_inferior' => '900.0000', 'ic_superior' => '1100.0000',
+        ];
+        DB::table('previsao')->insert($linhas);
+    }
+
     protected function semear(): void
     {
         DB::table('modalidade')->insert([
