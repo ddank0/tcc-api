@@ -26,6 +26,7 @@ class ContratoTest extends TestCase
         $this->semear();
         $this->semearSerie();
         $this->semearRanking();
+        $this->semearScores();
 
         /** @var ExportarOpenApi $comando */
         $comando = app(ExportarOpenApi::class);
@@ -44,6 +45,7 @@ class ContratoTest extends TestCase
             ['/api/analytics/modalidades', '/analytics/modalidades'],
             ['/api/analytics/orgaos', '/analytics/orgaos'],
             ['/api/analytics/fornecedores', '/analytics/fornecedores'],
+            ['/api/anomalies', '/anomalies'],
         ];
     }
 

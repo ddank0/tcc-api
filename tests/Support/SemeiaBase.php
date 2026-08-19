@@ -73,6 +73,34 @@ trait SemeiaBase
         DB::table('previsao')->insert($linhas);
     }
 
+    /** Semeia uma execução de scoring com três licitações ranqueadas. */
+    protected function semearScores(): void
+    {
+        DB::table('execucao_modelo')->insert([
+            'tipo' => 'anomaly:licitacao', 'algoritmo' => 'IsolationForest',
+            'parametros_json' => json_encode(['n_estimators' => 100, 'seed' => 42]),
+            'metricas_json' => json_encode(['pontuadas' => 3]),
+            'janela_treino_inicio' => null, 'janela_treino_fim' => null,
+            'executado_em' => '2026-08-19 12:00:00',
+        ]);
+        $execucao = DB::table('execucao_modelo')->where('tipo', 'anomaly:licitacao')->max('id');
+        assert(is_int($execucao));
+        $ids = DB::table('licitacao')->orderBy('id')->limit(3)->pluck('id')->all();
+
+        $features = json_encode([
+            'valores' => ['razao_valor_grupo' => 42.5, 'hhi_orgao' => 0.02],
+            'contribuicoes' => [
+                ['atributo' => 'razao_valor_grupo', 'desvio' => 39.1],
+                ['atributo' => 'hhi_orgao', 'desvio' => 0.2],
+            ],
+        ]);
+        DB::table('score_anomalia')->insert([
+            ['execucao_id' => $execucao, 'licitacao_id' => $ids[0], 'score' => '0.810000', 'posicao_ranking' => 1, 'features_json' => $features],
+            ['execucao_id' => $execucao, 'licitacao_id' => $ids[1], 'score' => '0.550000', 'posicao_ranking' => 2, 'features_json' => $features],
+            ['execucao_id' => $execucao, 'licitacao_id' => $ids[2], 'score' => '0.320000', 'posicao_ranking' => 3, 'features_json' => $features],
+        ]);
+    }
+
     protected function semear(): void
     {
         DB::table('modalidade')->insert([

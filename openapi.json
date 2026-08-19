@@ -217,6 +217,140 @@
                 }
             }
         },
+        "/anomalies": {
+            "get": {
+                "tags": [
+                    "Análises"
+                ],
+                "summary": "Ranking de atipicidade",
+                "description": "Scores materializados pelo job de scoring. Maior score = mais atípico.",
+                "operationId": "86180af54ce583d4b866ba5d388adf4a",
+                "parameters": [
+                    {
+                        "name": "competencia_de",
+                        "in": "query",
+                        "description": "AAAAMM",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "competencia_ate",
+                        "in": "query",
+                        "description": "AAAAMM",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "codigo_orgao",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer",
+                            "maximum": 100
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Ranking ordenado por posição",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "licitacao_id": {
+                                                        "type": "integer"
+                                                    },
+                                                    "score": {
+                                                        "type": "string"
+                                                    },
+                                                    "posicao_ranking": {
+                                                        "type": "integer"
+                                                    },
+                                                    "licitacao": {
+                                                        "type": "object"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        },
+                                        "meta": {
+                                            "properties": {
+                                                "total": {
+                                                    "type": "integer"
+                                                },
+                                                "aviso": {
+                                                    "type": "string"
+                                                },
+                                                "algoritmo": {
+                                                    "type": "string",
+                                                    "nullable": true
+                                                },
+                                                "executado_em": {
+                                                    "type": "string",
+                                                    "nullable": true
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Parâmetro inválido"
+                    }
+                }
+            }
+        },
+        "/anomalies/{id}": {
+            "get": {
+                "tags": [
+                    "Análises"
+                ],
+                "summary": "Score de uma licitação, com a contribuição dos atributos",
+                "operationId": "928234208374afddb55fc43f38c1a6eb",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Score, contribuições e método"
+                    },
+                    "404": {
+                        "description": "Licitação sem score"
+                    }
+                }
+            }
+        },
         "/forecast": {
             "get": {
                 "tags": [

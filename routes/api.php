@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AnalyticsController;
+use App\Http\Controllers\AnomaliesController;
 use App\Http\Controllers\ForecastController;
 use App\Http\Controllers\HealthController;
 use App\Http\Controllers\LicitacaoController;
@@ -13,6 +14,9 @@ Route::get('/licitacoes/{id}', [LicitacaoController::class, 'show'])
     ->whereNumber('id');
 
 Route::get('/forecast', [ForecastController::class, 'index']);
+
+Route::get('/anomalies', [AnomaliesController::class, 'index']);
+Route::get('/anomalies/{id}', [AnomaliesController::class, 'show'])->whereNumber('id');
 
 Route::prefix('analytics')->group(function (): void {
     Route::get('/evolucao', [AnalyticsController::class, 'evolucao']);
