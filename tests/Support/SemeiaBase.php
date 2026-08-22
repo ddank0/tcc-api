@@ -85,7 +85,9 @@ trait SemeiaBase
         ]);
         $execucao = DB::table('execucao_modelo')->where('tipo', 'anomaly:licitacao')->max('id');
         assert(is_int($execucao));
-        $ids = DB::table('licitacao')->orderBy('id')->limit(3)->pluck('id')->all();
+        $licitacoes = DB::table('licitacao')->orderBy('id')->limit(3)->get(['id', 'competencia']);
+        $ids = $licitacoes->pluck('id')->all();
+        $competencias = $licitacoes->pluck('competencia')->all();
 
         $features = json_encode([
             'valores' => ['razao_valor_grupo' => 42.5, 'hhi_orgao' => 0.02],
@@ -95,9 +97,9 @@ trait SemeiaBase
             ],
         ]);
         DB::table('score_anomalia')->insert([
-            ['execucao_id' => $execucao, 'licitacao_id' => $ids[0], 'score' => '0.810000', 'posicao_ranking' => 1, 'features_json' => $features],
-            ['execucao_id' => $execucao, 'licitacao_id' => $ids[1], 'score' => '0.550000', 'posicao_ranking' => 2, 'features_json' => $features],
-            ['execucao_id' => $execucao, 'licitacao_id' => $ids[2], 'score' => '0.320000', 'posicao_ranking' => 3, 'features_json' => $features],
+            ['execucao_id' => $execucao, 'licitacao_id' => $ids[0], 'competencia' => $competencias[0], 'score' => '0.810000', 'posicao_ranking' => 1, 'features_json' => $features],
+            ['execucao_id' => $execucao, 'licitacao_id' => $ids[1], 'competencia' => $competencias[1], 'score' => '0.550000', 'posicao_ranking' => 2, 'features_json' => $features],
+            ['execucao_id' => $execucao, 'licitacao_id' => $ids[2], 'competencia' => $competencias[2], 'score' => '0.320000', 'posicao_ranking' => 3, 'features_json' => $features],
         ]);
     }
 
